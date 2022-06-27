@@ -1,0 +1,20 @@
+{
+  "name": "tinyapp",
+  "version": "1.0.0",
+  "description": "Project 3: Lighthouse Labs Flex Web Development Course",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marilynn-Stone/tinyapp.git"
+  },
+  "keywords": [],
+  "author": "Marilynn Stone",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Marilynn-Stone/tinyapp/issues"
+  },
+  "homepage": "https://github.com/Marilynn-Stone/tinyapp#readme"
+}
