@@ -49,6 +49,9 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (req.params.shortURL !== urlDatabase) {
+    return res.send("Short URL does not exist.");
+  }
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
