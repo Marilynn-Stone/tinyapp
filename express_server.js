@@ -38,6 +38,15 @@ const generateRandomString = () => {
   return result;
 };
 
+const getUserByEmail = (email) => {
+  for (const userID in users) {
+    if (users[userID].email === email) {
+      return users[userID];
+    }
+  }
+  return null;
+};
+
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -52,7 +61,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.cookies["userID"]];
   const templateVars = {
     urls: urlDatabase,
     user: user
@@ -61,7 +70,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.cookies["userID"]];
   const templateVars = {
     user: user
   };
@@ -69,7 +78,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.cookies["userID"]];
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
@@ -79,7 +88,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.cookies["userID"]];
   const templateVars = {
     email: req.params.email,
     password: req.params.password,
@@ -124,26 +133,33 @@ app.post("/urls/update/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const user = users[req.cookies["user_id"]];
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  res.clearCookie("userID");
   res.redirect("/urls");
 });
 
 app.post("/register", (req, res) => {
+  console.log("users before:", users);
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  if (!email || !password) {
+    return res.status(400).send("Missing email &/or password.");
+  }
+  if (getUserByEmail(email)) {
+    return res.status(400).send("Email already registered.");
+  }
   const newUser = {
     id,
     email,
     password,
   };
   users[id] = newUser;
-  res.cookie("user_id", `${id}`);
+  console.log("users after:", users);
+  res.cookie("userID", `${id}`);
   res.redirect("/urls");
 });
 
