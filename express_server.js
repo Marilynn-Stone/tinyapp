@@ -143,6 +143,16 @@ app.post("/urls/update/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const foundUser = getUserByEmail(email);
+  if (!foundUser) {
+    return res.status(403).send("User email not found.");
+  }
+  if (password !== foundUser.password) {
+    return res.status(403).send("Password does not match email.");
+  }
+  res.cookie("userID", `${foundUser.id}`);
   res.redirect("/urls");
 });
 
@@ -152,14 +162,14 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  console.log("users before:", users);
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const foundUser = getUserByEmail(email);
   if (!email || !password) {
     return res.status(400).send("Missing email &/or password.");
   }
-  if (getUserByEmail(email)) {
+  if (foundUser) {
     return res.status(400).send("Email already registered.");
   }
   const newUser = {
@@ -168,7 +178,6 @@ app.post("/register", (req, res) => {
     password,
   };
   users[id] = newUser;
-  console.log("users after:", users);
   res.cookie("userID", `${id}`);
   res.redirect("/urls");
 });
