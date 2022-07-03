@@ -97,6 +97,16 @@ app.get("/register", (req, res) => {
   res.render("urls_register", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  const user = users[req.cookies["userID"]];
+  const templateVars = {
+    email: req.params.email,
+    password: req.params.password,
+    user: user
+  };
+  res.render("urls_login", templateVars);
+});
+
 app.get("/u/:shortURL", (req, res) => {
   if (req.params.shortURL !== urlDatabase) {
     return res.send("Short URL does not exist.");
