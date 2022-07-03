@@ -9,7 +9,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -71,7 +70,8 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (!req.cookies["userID"]) {
-    res.redirect("/login");
+    res.redirect("/login?error=You must be logged in to create a new URL.");
+    return;
   }
   const user = users[req.cookies["userID"]];
   const templateVars = {
@@ -102,10 +102,12 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const user = users[req.cookies["userID"]];
+  const error = req.query.error;
   const templateVars = {
     email: req.params.email,
     password: req.params.password,
-    user: user
+    user,
+    error
   };
   res.render("urls_login", templateVars);
 });
