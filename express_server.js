@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -217,8 +218,11 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(`${password}`, 10);
+  console.log("password:", password);
+  console.log("hashed:", hashedPassword);
   const foundUser = getUserByEmail(email);
-  if (!email || !password) {
+  if (!email || !hashedPassword) {
     res.redirect("/register?error=Email or password were not entered.");
     return;
   }
@@ -229,7 +233,7 @@ app.post("/register", (req, res) => {
   const newUser = {
     id,
     email,
-    password,
+    hashedPassword,
   };
   users[id] = newUser;
   res.cookie("userID", `${id}`);
