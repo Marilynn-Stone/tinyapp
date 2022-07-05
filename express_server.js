@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const {getUserByEmail} = require("./helper");
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -49,14 +50,7 @@ const generateRandomString = () => {
   return result;
 };
 
-const getUserByEmail = (email, database) => {
-  for (const userID in database) {
-    if (users[userID].email === email) {
-      return users[userID];
-    }
-  }
-  return null;
-};
+
 
 const urlsForUser = (user) => {
   const id = user.id;
@@ -224,7 +218,7 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(`${password}`, 10);
-  const foundUser = getUserByEmail(email);
+  const foundUser = getUserByEmail(email, users);
   if (!email || !hashedPassword) {
     res.redirect("/register?error=Email or password were not entered.");
     return;
