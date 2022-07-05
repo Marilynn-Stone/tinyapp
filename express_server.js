@@ -70,6 +70,13 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user = users[req.cookies["userID"]];
+  if (!user) {
+    const templateVars = {
+      urls: urlDatabase,
+      user
+    };
+    res.render("urls_index", templateVars);
+  }
   const urlsForUser = (user) => {
     let database = {};
     for (const shortURL in urlDatabase) {
