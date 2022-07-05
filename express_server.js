@@ -54,7 +54,15 @@ const getUserByEmail = (email) => {
   return null;
 };
 
-
+const urlsForUser = (user) => {
+  let database = {};
+  for (const shortURL in urlDatabase) {
+    if (user["id"] === urlDatabase[shortURL]["userID"]) {
+      database[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return database;
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -77,17 +85,7 @@ app.get("/urls", (req, res) => {
     };
     res.render("urls_index", templateVars);
   }
-  const urlsForUser = (user) => {
-    let database = {};
-    for (const shortURL in urlDatabase) {
-      if (user["id"] === urlDatabase[shortURL]["userID"]) {
-        database[shortURL] = urlDatabase[shortURL];
-      }
-    }
-    return database;
-  };
   const userDatabase = urlsForUser(user);
-  console.log("userDatabase:", userDatabase);
   const templateVars = {
     urls: userDatabase,
     user
@@ -109,19 +107,10 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const user = users[req.cookies["userID"]];
-  const urlsForUser = (user) => {
-    let database = {};
-    for (const shortURL in urlDatabase) {
-      if (user["id"] === urlDatabase[shortURL]["userID"]) {
-        database[shortURL] = urlDatabase[shortURL];
-      }
-    }
-    return database;
-  };
   const userDatabase = urlsForUser(user);
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]["longURL"],
+    longURL: userDatabase[req.params.shortURL]["longURL"],
     urls: userDatabase,
     user
   };
@@ -179,15 +168,21 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const user = users[req.cookies["userID"]];
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
+  if (user) {
+    delete urlDatabase[shortURL];
+  }
   res.redirect("/urls");
 });
 
 // redirect to update form
 app.post("/urls/:shortURL", (req, res) => {
+  const user = users[req.cookies["userID"]];
   const shortURL = req.params.shortURL;
-  res.redirect(`/urls/${shortURL}`);
+  if (user) {
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 app.post("/urls/update/:shortURL", (req, res) => {
