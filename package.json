@@ -4,7 +4,7 @@
   "description": "Project 3: Lighthouse Labs Flex Web Development Course",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/mocha.js",
     "start": "./node_modules/.bin/nodemon  -L express_server.js"
   },
   "repository": {
@@ -26,6 +26,8 @@
     "express": "^4.18.1"
   },
   "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
     "nodemon": "^2.0.18"
   }
 }
