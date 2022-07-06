@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
@@ -38,8 +38,6 @@ const users = {
   }
 };
 
-
-
 const generateRandomString = () => {
   let result = "";
   const characters =
@@ -49,8 +47,6 @@ const generateRandomString = () => {
   }
   return result;
 };
-
-
 
 const urlsForUser = (user) => {
   const id = user.id;
@@ -63,6 +59,7 @@ const urlsForUser = (user) => {
   }
   return database;
 };
+
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -78,25 +75,25 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user = users[req.session.userID];
-  console.log("user:", user);
   if (!user) {
     const templateVars = {
       urls: urlDatabase,
       user
     };
     res.render("urls_index", templateVars);
+  } else {
+    const userDatabase = urlsForUser(user);
+    const templateVars = {
+      urls: userDatabase,
+      user
+    };
+    res.render("urls_index", templateVars);
   }
-  const userDatabase = urlsForUser(user);
-  const templateVars = {
-    urls: userDatabase,
-    user
-  };
-  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   if (!req.session.userID) {
-    res.redirect("/login?error=You must be logged in to create a new URL.");
+    res.status(400).send("You must be logged in to create a new URL.");
     return;
   }
   const user = users[req.session.userID];
@@ -108,7 +105,15 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const user = users[req.session.userID];
+  if (!user) {
+    res.status(400).send("You must be logged in to create a new URL.");
+    return;
+  }
   const userDatabase = urlsForUser(user);
+  if (user["id"] !== userDatabase[req.params.shortURL]["userID"]) {
+    res.status(400).send("You only have access to your own URLs.");
+    return;
+  }
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: userDatabase[req.params.shortURL]["longURL"],
@@ -122,7 +127,7 @@ app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   if (!shortURL) {
-    res.redirect("/urls?error=That id does not exist in the database.");
+    res.status(400).send("That id does not exist in the database.");
     return;
   }
   res.redirect(longURL);
@@ -130,24 +135,20 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/register", (req, res) => {
   const user = users[req.session.userID];
-  const error = req.query.error;
   const templateVars = {
     email: req.params.email,
     password: req.params.password,
-    user,
-    error
+    user
   };
   res.render("urls_register", templateVars);
 });
 
 app.get("/login", (req, res) => {
   const user = users[req.session.userID];
-  const error = req.query.error;
   const templateVars = {
     email: req.params.email,
     password: req.params.password,
-    user,
-    error
+    user
   };
   res.render("urls_login", templateVars);
 });
@@ -179,6 +180,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // redirect to update form
 app.post("/urls/:shortURL", (req, res) => {
   const user = users[req.session.userID];
+  console.log("line 198 user:", user);
   const shortURL = req.params.shortURL;
   if (user) {
     res.redirect(`/urls/${shortURL}`);
@@ -197,11 +199,11 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   const foundUser = getUserByEmail(email, users);
   if (!foundUser) {
-    res.redirect("/login?error=User email not found.");
+    res.status(400).send("User email not found.");
     return;
   }
   if (!(bcrypt.compareSync(password, foundUser.hashedPassword))) {
-    res.redirect("/login?error=Password does not match email.");
+    res.status(400).send("Password does not match email.");
     return;
   }
   req.session.userID = `${foundUser.id}`;
@@ -220,11 +222,11 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(`${password}`, 10);
   const foundUser = getUserByEmail(email, users);
   if (!email || !hashedPassword) {
-    res.redirect("/register?error=Email or password were not entered.");
+    res.status(400).send("Email or password were not entered.");
     return;
   }
   if (foundUser) {
-    res.redirect("/login?error=That email is already registered. Please login.");
+    res.status(400).send("That email is already registered. Please login.");
     return;
   }
   const newUser = {
