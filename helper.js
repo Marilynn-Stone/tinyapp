@@ -1,10 +1,10 @@
 const getUserByEmail = (email, database) => {
   for (const userID in database) {
-    if (users[userID].email === email) {
-      return users[userID];
+    if (database[userID].email === email) {
+      return database[userID];
     }
   }
-  return null;
+  return undefined;
 };
 
-module.exports = {getUserByEmail};
+module.exports = getUserByEmail;
